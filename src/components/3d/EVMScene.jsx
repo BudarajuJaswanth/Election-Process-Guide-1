@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 
 function EVMModel() {
   return (
-    <group>
+    <group scale={0.7}>
       {/* Control Unit */}
       <mesh position={[-1.5, 0, 0]}>
         <boxGeometry args={[1.5, 0.6, 2]} />

@@ -1,11 +1,11 @@
 // App.jsx
 import { useState } from 'react';
-import { Globe, ShieldCheck } from 'lucide-react';
+import { Globe, ShieldCheck, HelpCircle } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { HeroSection } from './components/sections/HeroSection';
 import { ChatInterface } from './components/chat/ChatInterface';
 import { DynamicRenderer } from './components/visualization/DynamicRenderer';
-import { QuickFAQ } from './components/sections/QuickFAQ';
+import { FAQPage } from './components/pages/FAQPage';
 
 const LANGS = [
   { code: 'en', label: 'English' },
@@ -21,12 +21,18 @@ function AppContent() {
   const [journeyStarted, setJourneyStarted] = useState(false);
   const [currentResponse, setCurrentResponse] = useState(null);
   const [langOpen, setLangOpen] = useState(false);
+  const [view, setView] = useState('journey'); // 'journey' or 'faq'
 
   const goHome = () => {
     setJourneyStarted(false);
+    setView('journey');
     setCurrentResponse(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  if (view === 'faq') {
+    return <FAQPage onBack={() => setView('journey')} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#f1f5f9] text-gov-navy flex flex-col selection:bg-gov-blue selection:text-white">
@@ -46,6 +52,16 @@ function AppContent() {
         </div>
 
         <div className="flex items-center gap-6">
+          <nav className="hidden md:flex gap-6 items-center">
+            <button 
+              onClick={() => setView('faq')}
+              className="text-sm font-black text-gov-navy uppercase tracking-widest hover:text-gov-blue transition-colors flex items-center gap-2"
+            >
+              <HelpCircle size={16} />
+              FAQ
+            </button>
+          </nav>
+
           <div className="relative">
             <button
               onClick={() => setLangOpen(!langOpen)}
@@ -80,18 +96,15 @@ function AppContent() {
           <HeroSection onStart={() => setJourneyStarted(true)} />
         ) : (
           <div className="flex-1 w-full max-w-[1600px] mx-auto p-6 md:p-8 flex flex-col lg:flex-row gap-8">
-            {/* Left: Chat & FAQ */}
-            <div className="lg:w-[350px] xl:w-[450px] flex flex-col gap-8 flex-shrink-0">
-              <div className="h-[600px] lg:h-[650px]">
+            <div className="lg:w-[400px] xl:w-[500px] flex flex-col gap-8 flex-shrink-0">
+              <div className="h-[650px] lg:h-[750px]">
                 <ChatInterface 
                   onActionTriggered={(r) => setCurrentResponse(r)} 
                   onClose={() => setJourneyStarted(false)}
                 />
               </div>
-              <QuickFAQ />
             </div>
 
-            {/* Right: Dynamic Viz */}
             <div className="flex-1 min-h-[600px] lg:min-h-0">
               <DynamicRenderer responseData={currentResponse} />
             </div>
