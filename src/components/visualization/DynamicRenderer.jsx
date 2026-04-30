@@ -92,7 +92,19 @@ export function DynamicRenderer({ responseData }) {
                   <Calendar className="w-5 h-5 text-white" />
                 </div>
                 <div className="bg-white p-5 rounded-3xl border-2 border-gov-light-gray group-hover:border-gov-navy transition-all shadow-sm group-hover:shadow-lg">
-                  <div className="text-xs text-gov-blue font-black mb-2 uppercase tracking-[0.2em]">{event.date}</div>
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="text-xs text-gov-blue font-black uppercase tracking-[0.2em]">{event.date}</div>
+                    <a 
+                      href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.label)}&dates=${event.date.replace(/-/g, '')}/${event.date.replace(/-/g, '')}&details=${encodeURIComponent(event.description)}&sf=true&output=xml`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 bg-gov-bg rounded-xl text-gov-navy hover:bg-gov-blue hover:text-white transition-all shadow-sm"
+                      title="Add to Google Calendar"
+                      aria-label={`Add ${event.label} to Google Calendar`}
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
                   <h4 className="font-black text-xl text-gov-navy leading-tight">{event.label}</h4>
                   <p className="text-gov-gray text-sm mt-2 leading-relaxed font-medium">{event.description}</p>
                 </div>

@@ -76,7 +76,11 @@ export function ChatInterface({ onActionTriggered, onClose }) {
   const lastAssistantIndex = [...messages].map((m, i) => ({ m, i })).filter(({ m }) => m.role === 'assistant').pop()?.i;
 
   return (
-    <div className="flex flex-col h-full bg-white border border-gov-light-gray rounded-3xl overflow-hidden shadow-2xl relative">
+    <div 
+      className="flex flex-col h-full bg-white border border-gov-light-gray rounded-3xl overflow-hidden shadow-2xl relative"
+      role="region"
+      aria-label="Chat Interface"
+    >
       {/* Header */}
       <div className="bg-gradient-to-r from-gov-navy via-gov-navy to-gov-blue px-5 py-4 flex items-center justify-between flex-shrink-0 z-10 border-b border-white/10">
         <div className="flex items-center gap-3">
@@ -84,6 +88,7 @@ export function ChatInterface({ onActionTriggered, onClose }) {
             onClick={onClose}
             className="p-2 hover:bg-white/15 rounded-full text-white transition-all hover:scale-110 active:scale-95"
             title={t.chat.back}
+            aria-label={t.chat.back}
           >
             <ArrowLeft size={20} />
           </button>
@@ -105,6 +110,7 @@ export function ChatInterface({ onActionTriggered, onClose }) {
           onClick={initChat}
           className="p-2.5 hover:bg-white/15 rounded-full text-white/50 hover:text-white transition-all group"
           title={t.chat.clear}
+          aria-label={t.chat.clear}
         >
           <Trash2 size={16} className="group-hover:rotate-12 transition-transform" />
         </button>
@@ -119,6 +125,8 @@ export function ChatInterface({ onActionTriggered, onClose }) {
           backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)',
           backgroundSize: '20px 20px'
         }}
+        role="log"
+        aria-live="polite"
       >
         <AnimatePresence initial={false}>
           {messages.map((msg, idx) => {
@@ -134,7 +142,7 @@ export function ChatInterface({ onActionTriggered, onClose }) {
               >
                 <div className={`flex items-end gap-3 max-w-[90%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                   {!isUser && (
-                    <div className="w-9 h-9 rounded-xl bg-gov-blue/10 flex items-center justify-center flex-shrink-0 mb-1 border border-gov-blue/20 shadow-sm">
+                    <div className="w-9 h-9 rounded-xl bg-gov-blue/10 flex items-center justify-center flex-shrink-0 mb-1 border border-gov-blue/20 shadow-sm" aria-hidden="true">
                       <Bot size={18} className="text-gov-blue" />
                     </div>
                   )}
@@ -152,7 +160,7 @@ export function ChatInterface({ onActionTriggered, onClose }) {
                               <LinkIcon size={12} />{t.chat.source}
                             </a>
                           )}
-                          <button className="flex items-center gap-1.5 hover:text-gov-blue transition-colors">
+                          <button className="flex items-center gap-1.5 hover:text-gov-blue transition-colors" aria-label={t.chat.listen}>
                             <Volume2 size={12} />{t.chat.listen}
                           </button>
                         </div>
@@ -166,7 +174,7 @@ export function ChatInterface({ onActionTriggered, onClose }) {
         </AnimatePresence>
 
         {isTyping && (
-          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-end gap-3">
+          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-end gap-3" aria-live="assertive">
             <div className="w-9 h-9 rounded-xl bg-gov-blue/10 flex items-center justify-center flex-shrink-0 border border-gov-blue/20">
               <Bot size={18} className="text-gov-blue" />
             </div>

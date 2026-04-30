@@ -105,7 +105,7 @@ function AppContent() {
               </div>
             </div>
 
-            <div className="flex-1 min-h-[600px] lg:min-h-0">
+            <div className="flex-1 min-h-[600px] lg:min-h-0" role="complementary" aria-label="Election Visualizations">
               <DynamicRenderer responseData={currentResponse} />
             </div>
           </div>

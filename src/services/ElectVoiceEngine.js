@@ -71,9 +71,13 @@ JSON STRUCTURE:
         const result = await chat.sendMessage(input);
         const responseText = result.response.text();
         
+        // Security: Sanitize output to prevent XSS/Script injection
+        const sanitizedText = responseText.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+                                          .replace(/[<>]/g, (tag) => ({ '<': '&lt;', '>': '&gt;' }[tag] || tag));
+
         try {
           // Robust JSON Extraction
-          const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+          const jsonMatch = sanitizedText.match(/\{[\s\S]*\}/);
           const cleanedJson = jsonMatch ? jsonMatch[0] : responseText;
           return JSON.parse(cleanedJson);
         } catch (e) {
