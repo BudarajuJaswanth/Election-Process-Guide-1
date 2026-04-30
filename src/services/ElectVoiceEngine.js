@@ -9,6 +9,9 @@ export const ElectVoiceEngine = {
 
     // 1. Keyword Overrides (Instant Local Logic)
     // These ensure complex UI components are triggered reliably
+    if (text.match(/eligibility|eligible|paatrata|patrata|पात्रता/)) {
+      return getLocalResponse('eligibility', lang);
+    }
     if (text.match(/first.?time|new voter|pehli baar|pahli baar|पहली बार|नया मतदाता/)) {
       return getLocalResponse('firstTime', lang);
     }
@@ -26,15 +29,14 @@ export const ElectVoiceEngine = {
     if (genAI) {
       try {
         const model = genAI.getGenerativeModel({ 
-          model: "gemini-2.0-flash",
+          model: "gemini-2.0-flash-exp",
           systemInstruction: `You are ElectVoice, the official election assistant for the Election Commission of India (ECI). 
 
 ROLE & STYLE:
 - Act as a direct, authoritative guide. 
 - Provide factual data about the current election process, eligibility, and timelines.
 - You have access to historical election patterns and past resources to provide context if asked.
-- Be concise. Do NOT be overly conversational or ask too many follow-up questions.
-- Strictly provide the required information and suggest only the most critical next steps.
+- Be concise. Do NOT be overly conversational.
 
 OFFICIAL GROUND TRUTH:
 1. ELIGIBILITY: Indian Citizen, 18+ on qualifying dates (Jan 1, Apr 1, Jul 1, Oct 1), ordinary resident.
@@ -45,7 +47,6 @@ CRITICAL RULES:
 - Respond strictly in ${lang}.
 - Respond ONLY in valid JSON.
 - Cite official URLs.
-- LIMIT "next_prompts" to exactly 2 highly relevant actions.
 
 JSON STRUCTURE:
 {
@@ -97,16 +98,16 @@ JSON STRUCTURE:
 function getLocalResponse(key, lang, history = []) {
   const responses = {
     en: {
-      firstTime: { text: "Welcome! Let's get you started as a first-time voter. You'll need to check eligibility, register on NVSP, get your EPIC card, and find your polling booth.", ui_action: "checklist", payload: { title: "First-Time Voter Checklist", steps: [{ id: "age", label: "Check Eligibility (18+ years)", status: "pending" }, { id: "register", label: "Register on NVSP (Form 6)", status: "pending" }, { id: "epic", label: "Apply for EPIC / Voter ID", status: "pending" }, { id: "booth", label: "Find Your Polling Booth", status: "pending" }] }, next_prompts: ["How to register on NVSP?", "What is an EPIC card?"], source: "https://eci.gov.in" },
-      polling: { text: "Find your polling booth using the Voter Helpline App, voterportal.eci.gov.in, or by calling 1950.", ui_action: "map", payload: { query: "Polling booth near me", zoom: 14 }, next_prompts: ["What ID to bring?", "Polling booth timings?"], source: "https://voterportal.eci.gov.in" },
-      timeline: { text: "Here is the 2025-26 Indian election calendar.", ui_action: "timeline", payload: { events: [{ date: "2025-10-30", label: "Election Day", type: "election_day", description: "Polls open 7 AM – 6 PM." }] }, next_prompts: ["State election dates?"], source: "https://eci.gov.in/elections" },
-      postal: { text: "Postal ballots are available to specific categories. Submit Form 12D.", ui_action: "3d_scene", payload: { scene: "ballot_box", camera: "orbit", annotation: "Indian Postal Ballot" }, next_prompts: ["How to fill Form 12D?"], source: "https://eci.gov.in" },
-      fallbacks: ["I'm ElectVoice — ECI's official AI guide. Ask me about registration or EPIC cards.", "You can call ECI Helpline 1950."]
+      eligibility: { text: "To vote in India, you must be: 1. An Indian Citizen. 2. At least 18 years old on the qualifying date. 3. An ordinary resident in the constituency. 4. Not disqualified due to unsound mind or corrupt practices.", ui_action: "checklist", payload: { title: "Voter Eligibility Criteria", steps: [{ id: "citizen", label: "Indian Citizenship", status: "completed" }, { id: "age", label: "18+ Years Old", status: "completed" }, { id: "residency", label: "Ordinary Resident", status: "completed" }] }, source: "https://eci.gov.in" },
+      firstTime: { text: "Welcome! Let's get you started as a first-time voter. You'll need to check eligibility, register on NVSP, get your EPIC card, and find your polling booth.", ui_action: "checklist", payload: { title: "First-Time Voter Checklist", steps: [{ id: "age", label: "Check Eligibility (18+ years)", status: "pending" }, { id: "register", label: "Register on NVSP (Form 6)", status: "pending" }, { id: "epic", label: "Apply for EPIC / Voter ID", status: "pending" }, { id: "booth", label: "Find Your Polling Booth", status: "pending" }] }, source: "https://eci.gov.in" },
+      polling: { text: "Find your polling booth using the Voter Helpline App, voterportal.eci.gov.in, or by calling 1950.", ui_action: "map", payload: { query: "Polling booth near me", zoom: 14 }, source: "https://voterportal.eci.gov.in" },
+      timeline: { text: "Here is the official election calendar.", ui_action: "timeline", payload: { events: [{ date: "2025-10-30", label: "Election Day", type: "election_day", description: "Polls open 7 AM – 6 PM." }] }, source: "https://eci.gov.in/elections" },
+      fallbacks: ["I can help with registration, eligibility, and polling booths. What would you like to know?", "Ask me about Form 6, Voter ID, or how to check your name in the list."]
     },
     hi: {
-      firstTime: { text: "स्वागत है! पहली बार मतदान के लिए पात्रता जाँचें, NVSP पर Form 6 भरें, EPIC कार्ड प्राप्त करें।", ui_action: "checklist", payload: { title: "नए मतदाता पंजीकरण की प्रक्रिया", steps: [{ id: "age", label: "आयु जाँचें (18+ वर्ष)", status: "pending" }, { id: "register", label: "Form 6 भरें", status: "pending" }] }, next_prompts: ["रजिस्ट्रेशन कैसे करें?", "EPIC कार्ड क्या है?"], source: "https://eci.gov.in" },
-      timeline: { text: "2025-26 चुनाव कैलेंडर यहाँ है।", ui_action: "timeline", payload: { events: [{ date: "2025-10-30", label: "मतदान दिवस", type: "election_day", description: "सुबह 7 – शाम 6 बजे।" }] }, next_prompts: ["चुनाव तिथियाँ?"], source: "https://eci.gov.in/elections" },
-      fallbacks: ["मैं ElectVoice हूँ — ECI का AI मार्गदर्शक। रजिस्ट्रेशन या EPIC कार्ड के बारे में पूछें।"]
+      eligibility: { text: "भारत में मतदान के लिए: 1. भारतीय नागरिक होना चाहिए। 2. आयु 18 वर्ष या उससे अधिक होनी चाहिए। 3. आप अपने निर्वाचन क्षेत्र के सामान्य निवासी होने चाहिए।", ui_action: "checklist", payload: { title: "मतदाता पात्रता मानदंड", steps: [{ id: "citizen", label: "भारतीय नागरिकता", status: "completed" }, { id: "age", label: "18+ वर्ष की आयु", status: "completed" }] }, source: "https://eci.gov.in" },
+      firstTime: { text: "स्वागत है! पहली बार मतदान के लिए पात्रता जाँचें, NVSP पर Form 6 भरें, EPIC कार्ड प्राप्त करें।", ui_action: "checklist", payload: { title: "नए मतदाता पंजीकरण की प्रक्रिया", steps: [{ id: "age", label: "आयु जाँचें (18+ वर्ष)", status: "pending" }, { id: "register", label: "Form 6 भरें", status: "pending" }] }, source: "https://eci.gov.in" },
+      fallbacks: ["मैं रजिस्ट्रेशन, पात्रता और मतदान केंद्रों में आपकी मदद कर सकता हूँ।"]
     },
     ta: { fallbacks: ["நான் ElectVoice — இந்திய தேர்தல் ஆணையத்தின் AI வழிகாட்டி."], suggestions: ["பதிவு செய்வது எப்படி?", "தேர்தல் எப்போது?", "வாக்குச்சாவடி"] },
     bn: { fallbacks: ["আমি ElectVoice — ভারত নির্বাচন কমিশনের AI গাইড।"], suggestions: ["নিবন্ধন কিভাবে করব?", "নির্বাচন কখন?", "ভোটকেন্দ্র"] },
