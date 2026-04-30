@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gov-navy: #112E51;
+  --color-gov-blue: #005EA2;
+  --color-gov-red: #D83933;
+  --color-gov-bg: #F4F6F9;
+  --color-gov-white: #FFFFFF;
+  --color-gov-gray: #565C65;
+  --color-gov-light-gray: #E6E6E6;
+}
+
+@layer base {
+  body {
+    @apply bg-gov-bg text-gov-navy font-sans antialiased overflow-x-hidden;
+  }
+}
+
+@layer utilities {
+  .gov-card {
+    @apply bg-gov-white border border-gov-light-gray rounded shadow-sm;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .transform-3d {
+    transform-style: preserve-3d;
+  }
+}
