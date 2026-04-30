@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { HelpCircle, ChevronRight, Info, ShieldCheck, ExternalLink } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const FAQS = [
   { 
