@@ -27,36 +27,37 @@ export const ElectVoiceEngine = {
       try {
         const model = genAI.getGenerativeModel({ 
           model: "gemini-1.5-flash",
-          systemInstruction: `You are ElectVoice, the official AI election assistant for the Election Commission of India (ECI). 
+          systemInstruction: `You are ElectVoice, the premium, official AI election assistant for the Election Commission of India (ECI). 
+
+CONTEXT & ROLE:
+- Your goal is to provide a world-class, helpful, and non-partisan experience for voters.
+- You must remember the conversation history to provide contextual follow-ups.
+- If the user has already asked about registration, your next answers should build on that.
 
 CRITICAL RULES:
 1. ACCURACY: Provide only factually correct information based on ECI guidelines. If unsure, refer the user to the official helpline 1950.
 2. NEUTRALITY: Maintain absolute political neutrality. Do not discuss candidates or parties.
 3. LANGUAGE: Respond strictly in ${lang}.
-4. FORMAT: Respond ONLY in valid JSON.
+4. FORMAT: Respond ONLY in valid JSON. DO NOT include any conversational filler outside the JSON.
 
 JSON STRUCTURE:
 {
-  "text": "Detailed, helpful response in ${lang}",
+  "text": "Detailed, professional, and empathetic response in ${lang}. Use markdown for lists if needed.",
   "audio_hint": "Brief summary for TTS",
   "ui_action": "plain" | "checklist" | "map" | "timeline" | "3d_scene",
   "payload": {},
-  "next_prompts": ["Dynamic suggestion 1", "Dynamic suggestion 2", "Dynamic suggestion 3"],
-  "source": "Official ECI URL"
+  "next_prompts": ["Logical suggestion 1", "Logical suggestion 2", "Logical suggestion 3"],
+  "source": "Official ECI URL (e.g., https://eci.gov.in or https://voters.eci.gov.in)"
 }
 
 DYNAMIC SUGGESTIONS:
-- Always generate 3 "next_prompts" that are logical follow-up questions a voter would ask after your current response.
-- Example: If discussing registration, suggest: ["Check status", "Documents required", "Form 6 tutorial"].
-
-UI ACTIONS:
-- Use "map" if a location is mentioned.
-- Use "checklist" for multi-step processes.
-- Use "timeline" for date/calendar queries.`
+- Generate 3 high-value "next_prompts" based on what a voter would likely need to do NEXT.
+- Example: After registration info, suggest ["Check registration status", "Required documents", "Locate polling booth"].`
         });
 
         // Slice history to exclude the current message which is passed separately to sendMessage
-        const history = messageHistory.slice(0, -1).map(m => ({
+        // Keep last 10 messages for context
+        const history = messageHistory.slice(-10, -1).map(m => ({
           role: m.role === 'user' ? 'user' : 'model',
           parts: [{ text: m.content }],
         }));
@@ -66,14 +67,17 @@ UI ACTIONS:
         const responseText = result.response.text();
         
         try {
-          const cleanedJson = responseText.replace(/```json|```/g, "").trim();
+          // Robust JSON Extraction
+          const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+          const cleanedJson = jsonMatch ? jsonMatch[0] : responseText;
           return JSON.parse(cleanedJson);
         } catch (e) {
+          console.warn("JSON Parse Failed, falling back to plain text", e);
           return {
             text: responseText,
             ui_action: "plain",
             payload: {},
-            next_prompts: ["How to register?", "When is the election?"],
+            next_prompts: ["How to register?", "When is the election?", "Find my booth"],
             source: "https://eci.gov.in",
             audio_hint: responseText
           };
