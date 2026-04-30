@@ -53,7 +53,6 @@ JSON STRUCTURE:
   "audio_hint": "Brief summary",
   "ui_action": "plain" | "checklist" | "map" | "timeline" | "3d_scene",
   "payload": {},
-  "next_prompts": ["Action 1", "Action 2"],
   "source": "Official URL"
 }`
         });

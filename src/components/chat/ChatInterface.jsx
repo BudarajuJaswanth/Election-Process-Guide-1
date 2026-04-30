@@ -160,25 +160,6 @@ export function ChatInterface({ onActionTriggered, onClose }) {
                     </div>
                   </div>
                 </div>
-                {!isUser && isLastAssistant && msg.options?.length > 0 && (
-                  <motion.div 
-                    initial={{ opacity: 0, x: -10 }} 
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 }}
-                    className="mt-4 ml-12 flex flex-wrap gap-2.5"
-                  >
-                    {msg.options.map((opt, i) => (
-                      <button 
-                        key={i} 
-                        onClick={() => handleSend(opt)} 
-                        disabled={isTyping}
-                        className="text-[11px] font-bold px-4 py-2.5 rounded-full bg-white border-2 border-gov-blue/10 text-gov-blue hover:bg-gov-blue hover:text-white hover:border-gov-blue hover:shadow-md transition-all disabled:opacity-50"
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
               </motion.div>
             );
           })}
