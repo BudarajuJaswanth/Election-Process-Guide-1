@@ -22,7 +22,9 @@ export const translations = {
       listen: 'Listen',
       source: 'Source',
       welcome: "Hello! I'm ElectVoice — the official AI guide of the Election Commission of India. I can help with voter registration, EPIC cards, polling booths, and the election process.",
-      quickReplies: ['I am a first-time voter', 'When is the election?', 'Where do I vote?']
+      quickReplies: ['I am a first-time voter', 'When is the election?', 'Where do I vote?'],
+      back: 'Back to Home',
+      clear: 'Clear Chat'
     },
     viz: {
       awaiting: 'Awaiting your input...',
@@ -112,7 +114,9 @@ export const translations = {
       listen: 'सुनें',
       source: 'स्रोत',
       welcome: 'नमस्ते! मैं ElectVoice हूँ — भारत निर्वाचन आयोग का आधिकारिक AI मार्गदर्शक। मतदाता पंजीकरण, EPIC कार्ड, मतदान केंद्र, और चुनाव प्रक्रिया में मैं आपकी मदद कर सकता हूँ।',
-      quickReplies: ['मैं पहली बार मतदाता हूँ', 'चुनाव कब है?', 'मतदान कहाँ करें?']
+      quickReplies: ['मैं पहली बार मतदाता हूँ', 'चुनाव कब है?', 'मतदान कहाँ करें?'],
+      back: 'होम पर वापस',
+      clear: 'चैट साफ़ करें'
     },
     viz: {
       awaiting: 'आपके इनपुट की प्रतीक्षा है...',

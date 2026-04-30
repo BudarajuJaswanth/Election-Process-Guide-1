@@ -1,7 +1,7 @@
 // ChatInterface.jsx
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Volume2, Link as LinkIcon, Bot, ArrowLeft, Trash2 } from 'lucide-react';
+import { Send, Volume2, Link as LinkIcon, Bot, ArrowLeft, Trash2, ChevronDown } from 'lucide-react';
 import { ElectVoiceEngine } from '../../services/ElectVoiceEngine';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -10,7 +10,9 @@ export function ChatInterface({ onActionTriggered, onClose }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   const initChat = () => {
     setMessages([{
@@ -23,7 +25,6 @@ export function ChatInterface({ onActionTriggered, onClose }) {
     }]);
   };
 
-  // Reset chat when language changes
   useEffect(() => {
     initChat();
     setInput('');
@@ -31,8 +32,17 @@ export function ChatInterface({ onActionTriggered, onClose }) {
   }, [lang]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+    const timer = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timer);
   }, [messages, isTyping]);
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    setShowScrollBtn(scrollHeight - scrollTop - clientHeight > 100);
+  };
 
   const handleSend = async (textOverride = null) => {
     const textToSend = textOverride || input;
@@ -66,39 +76,50 @@ export function ChatInterface({ onActionTriggered, onClose }) {
   const lastAssistantIndex = [...messages].map((m, i) => ({ m, i })).filter(({ m }) => m.role === 'assistant').pop()?.i;
 
   return (
-    <div className="flex flex-col h-full bg-white border border-gov-light-gray rounded-2xl overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-full bg-white border border-gov-light-gray rounded-3xl overflow-hidden shadow-2xl relative">
       {/* Header */}
-      <div className="bg-gradient-to-r from-gov-navy to-gov-blue px-4 py-4 flex items-center justify-between flex-shrink-0">
+      <div className="bg-gradient-to-r from-gov-navy via-gov-navy to-gov-blue px-5 py-4 flex items-center justify-between flex-shrink-0 z-10 border-b border-white/10">
         <div className="flex items-center gap-3">
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-full text-white transition-colors"
-            title="Back to Home"
+            className="p-2 hover:bg-white/15 rounded-full text-white transition-all hover:scale-110 active:scale-95"
+            title={t.chat.back}
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={20} />
           </button>
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
+            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-xl flex items-center justify-center border border-white/20 shadow-inner">
               <Bot size={22} className="text-white" />
             </div>
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-gov-navy animate-pulse"></span>
+            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gov-navy"></span>
           </div>
           <div>
-            <h2 className="font-bold text-white text-base leading-none">{t.chat.headerTitle}</h2>
-            <p className="text-white/70 text-[10px] uppercase tracking-widest mt-1 font-semibold">{t.chat.status}</p>
+            <h2 className="font-bold text-white text-base leading-none tracking-tight">{t.chat.headerTitle}</h2>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+              <p className="text-white/70 text-[10px] uppercase tracking-widest font-bold">{t.chat.status}</p>
+            </div>
           </div>
         </div>
         <button 
           onClick={initChat}
-          className="p-2 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-colors"
-          title="Clear Chat"
+          className="p-2.5 hover:bg-white/15 rounded-full text-white/50 hover:text-white transition-all group"
+          title={t.chat.clear}
         >
-          <Trash2 size={16} />
+          <Trash2 size={16} className="group-hover:rotate-12 transition-transform" />
         </button>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-[#f8fafc] to-[#f1f5f9]">
+      {/* Messages Container */}
+      <div 
+        ref={chatContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-5 space-y-5 bg-[#f8fafc] relative scrollbar-hide"
+        style={{
+          backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)',
+          backgroundSize: '20px 20px'
+        }}
+      >
         <AnimatePresence initial={false}>
           {messages.map((msg, idx) => {
             const isUser = msg.role === 'user';
@@ -106,32 +127,32 @@ export function ChatInterface({ onActionTriggered, onClose }) {
             return (
               <motion.div 
                 key={msg.id} 
-                initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+                initial={{ opacity: 0, y: 15, scale: 0.95 }} 
                 animate={{ opacity: 1, y: 0, scale: 1 }} 
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                 className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
               >
-                <div className={`flex items-end gap-3 max-w-[88%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className={`flex items-end gap-3 max-w-[90%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                   {!isUser && (
-                    <div className="w-8 h-8 rounded-full bg-gov-blue/10 flex items-center justify-center flex-shrink-0 mb-1 border border-gov-blue/20">
-                      <Bot size={16} className="text-gov-blue" />
+                    <div className="w-9 h-9 rounded-xl bg-gov-blue/10 flex items-center justify-center flex-shrink-0 mb-1 border border-gov-blue/20 shadow-sm">
+                      <Bot size={18} className="text-gov-blue" />
                     </div>
                   )}
-                  <div className="group">
-                    <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm transition-all ${
+                  <div className="relative group">
+                    <div className={`px-5 py-3.5 rounded-2xl text-sm leading-relaxed shadow-sm transition-all duration-300 ${
                       isUser
-                        ? 'bg-gov-blue text-white rounded-br-none hover:shadow-md'
+                        ? 'bg-gov-blue text-white rounded-br-none hover:shadow-lg hover:shadow-gov-blue/20'
                         : 'bg-white text-gov-navy rounded-bl-none border border-gov-light-gray hover:border-gov-blue/30'
                     }`}>
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                      <p className="whitespace-pre-wrap font-medium">{msg.content}</p>
                       {!isUser && (msg.source || msg.audio_hint) && (
-                        <div className="mt-3 pt-2 border-t border-gov-light-gray/50 flex items-center gap-4 text-[10px] font-bold uppercase tracking-wider text-gov-gray">
+                        <div className="mt-4 pt-3 border-t border-gov-light-gray/40 flex items-center gap-5 text-[10px] font-bold uppercase tracking-widest text-gov-gray">
                           {msg.source && (
-                            <a href={msg.source} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-gov-blue transition-colors underline">
+                            <a href={msg.source} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-gov-blue transition-colors underline decoration-gov-blue/30">
                               <LinkIcon size={12} />{t.chat.source}
                             </a>
                           )}
-                          <button className="flex items-center gap-1 hover:text-gov-blue transition-colors">
+                          <button className="flex items-center gap-1.5 hover:text-gov-blue transition-colors">
                             <Volume2 size={12} />{t.chat.listen}
                           </button>
                         </div>
@@ -143,15 +164,15 @@ export function ChatInterface({ onActionTriggered, onClose }) {
                   <motion.div 
                     initial={{ opacity: 0, x: -10 }} 
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="mt-3 ml-11 flex flex-wrap gap-2"
+                    transition={{ delay: 0.6 }}
+                    className="mt-4 ml-12 flex flex-wrap gap-2.5"
                   >
                     {msg.options.map((opt, i) => (
                       <button 
                         key={i} 
                         onClick={() => handleSend(opt)} 
                         disabled={isTyping}
-                        className="text-[11px] font-bold px-4 py-2 rounded-full bg-white border-2 border-gov-blue/20 text-gov-blue hover:bg-gov-blue hover:text-white hover:border-gov-blue transition-all disabled:opacity-50 shadow-sm"
+                        className="text-[11px] font-bold px-4 py-2.5 rounded-full bg-white border-2 border-gov-blue/10 text-gov-blue hover:bg-gov-blue hover:text-white hover:border-gov-blue hover:shadow-md transition-all disabled:opacity-50"
                       >
                         {opt}
                       </button>
@@ -165,37 +186,52 @@ export function ChatInterface({ onActionTriggered, onClose }) {
 
         {isTyping && (
           <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-end gap-3">
-            <div className="w-8 h-8 rounded-full bg-gov-blue/10 flex items-center justify-center flex-shrink-0 border border-gov-blue/20">
-              <Bot size={16} className="text-gov-blue" />
+            <div className="w-9 h-9 rounded-xl bg-gov-blue/10 flex items-center justify-center flex-shrink-0 border border-gov-blue/20">
+              <Bot size={18} className="text-gov-blue" />
             </div>
-            <div className="bg-white border border-gov-light-gray rounded-2xl rounded-bl-none px-5 py-4 flex items-center gap-2 shadow-sm">
-              <span className="w-1.5 h-1.5 bg-gov-blue rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 bg-gov-blue rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
-              <span className="w-1.5 h-1.5 bg-gov-blue rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
+            <div className="bg-white border border-gov-light-gray rounded-2xl rounded-bl-none px-6 py-4 flex items-center gap-2.5 shadow-sm">
+              <span className="w-2 h-2 bg-gov-blue/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-2 h-2 bg-gov-blue/60 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
+              <span className="w-2 h-2 bg-gov-blue rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
             </div>
           </motion.div>
         )}
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} className="h-4" />
       </div>
 
-      {/* Input */}
-      <div className="p-4 bg-white border-t border-gov-light-gray flex-shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-        <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex items-center gap-3">
-          <div className="flex-1 relative">
+      {/* Floating Scroll Button */}
+      <AnimatePresence>
+        {showScrollBtn && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            className="absolute bottom-24 right-6 w-10 h-10 bg-gov-blue text-white rounded-full flex items-center justify-center shadow-xl z-20 hover:bg-gov-navy transition-colors"
+          >
+            <ChevronDown size={20} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Input Area */}
+      <div className="p-5 bg-white border-t border-gov-light-gray/60 flex-shrink-0 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-10">
+        <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex items-center gap-4">
+          <div className="flex-1 relative group">
             <input
               type="text" 
               value={input} 
               onChange={(e) => setInput(e.target.value)}
               placeholder={t.chat.placeholder}
-              className="w-full bg-[#f1f5f9] border border-gov-light-gray rounded-full px-6 py-3.5 text-sm text-gov-navy placeholder:text-gov-gray/50 focus:outline-none focus:ring-2 focus:ring-gov-blue focus:bg-white transition-all shadow-inner"
+              className="w-full bg-[#f8fafc] border-2 border-transparent rounded-2xl px-6 py-4 text-sm font-medium text-gov-navy placeholder:text-gov-gray/40 focus:outline-none focus:ring-4 focus:ring-gov-blue/10 focus:bg-white focus:border-gov-blue/20 transition-all shadow-inner group-hover:bg-[#f1f5f9]"
             />
           </div>
           <button 
             type="submit" 
             disabled={!input.trim() || isTyping}
-            className="w-12 h-12 flex items-center justify-center bg-gov-blue text-white rounded-full hover:bg-gov-navy hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100 transition-all flex-shrink-0 shadow-lg shadow-gov-blue/20"
+            className="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-gov-blue to-gov-navy text-white rounded-2xl hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100 transition-all flex-shrink-0 shadow-lg shadow-gov-blue/30"
           >
-            <Send size={18} />
+            <Send size={22} className={isTyping ? 'animate-pulse' : ''} />
           </button>
         </form>
       </div>

@@ -27,12 +27,13 @@ export const ElectVoiceEngine = {
       try {
         const model = genAI.getGenerativeModel({ 
           model: "gemini-1.5-flash",
-          systemInstruction: `You are ElectVoice, the premium, official AI election assistant for the Election Commission of India (ECI). 
+          systemInstruction: `You are ElectVoice, the premium, official AI election assistant for the Election Commission of India (ECI). You are an expert in Indian Election Laws, the Constitution of India, and ECI administrative procedures.
 
 CONTEXT & ROLE:
 - Your goal is to provide a world-class, helpful, and non-partisan experience for voters.
 - You must remember the conversation history to provide contextual follow-ups.
 - If the user has already asked about registration, your next answers should build on that.
+- Always be polite, concise, and authoritative.
 
 CRITICAL RULES:
 1. ACCURACY: Provide only factually correct information based on ECI guidelines. If unsure, refer the user to the official helpline 1950.
@@ -56,8 +57,8 @@ DYNAMIC SUGGESTIONS:
         });
 
         // Slice history to exclude the current message which is passed separately to sendMessage
-        // Keep last 10 messages for context
-        const history = messageHistory.slice(-10, -1).map(m => ({
+        // Keep last 20 messages for deep context (supports 10+ turns)
+        const history = messageHistory.slice(-20, -1).map(m => ({
           role: m.role === 'user' ? 'user' : 'model',
           parts: [{ text: m.content }],
         }));
